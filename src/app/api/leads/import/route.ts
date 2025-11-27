@@ -43,6 +43,12 @@ export async function POST(request: NextRequest) {
           }
         }
 
+        // Parse currency values
+        const estimateValue = parseCurrency(row.Estimate)
+        const maoValue = parseCurrency(row.MAO)
+        const offerPriceValue = parseCurrency(row['Offer Price'] || row.OfferPrice)
+        const equityValue = parseCurrency(row.Equity)
+
         const leadData = {
           leadType,
           name: row.Name || 'Unknown',
@@ -54,10 +60,10 @@ export async function POST(request: NextRequest) {
           zipCode: row['Zip Code'] || row.ZipCode || null,
           notes: row.Notes || null,
           callRecording: leadType === 'Diamond' ? (row['Call Recording'] || null) : null,
-          estimate: row.Estimate ? new Prisma.Decimal(parseCurrency(row.Estimate)) : null,
-          mao: row.MAO ? new Prisma.Decimal(parseCurrency(row.MAO)) : null,
-          offerPrice: row['Offer Price'] || row.OfferPrice ? new Prisma.Decimal(parseCurrency(row['Offer Price'] || row.OfferPrice)) : null,
-          equity: row.Equity ? new Prisma.Decimal(parseCurrency(row.Equity)) : null,
+          estimate: estimateValue !== null ? new Prisma.Decimal(estimateValue) : null,
+          mao: maoValue !== null ? new Prisma.Decimal(maoValue) : null,
+          offerPrice: offerPriceValue !== null ? new Prisma.Decimal(offerPriceValue) : null,
+          equity: equityValue !== null ? new Prisma.Decimal(equityValue) : null,
           status: row.Status || 'New',
           importedAt: new Date(),
         }

@@ -37,9 +37,11 @@ export function formatDate(date: Date | string | null | undefined): string {
   }).format(d)
 }
 
-export function parseCurrency(value: string): number {
-  const cleaned = value.replace(/[$,]/g, '')
-  return parseFloat(cleaned) || 0
+export function parseCurrency(value: string | undefined | null): number | null {
+  if (!value || value.trim() === '') return null
+  const cleaned = value.replace(/[$,]/g, '').trim()
+  const parsed = parseFloat(cleaned)
+  return isNaN(parsed) ? null : parsed
 }
 
 export function getEquityColor(equity: number | null | undefined): string {
