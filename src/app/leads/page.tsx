@@ -8,7 +8,7 @@ import { SearchBar } from '@/components/SearchBar'
 import { FilterPanel } from '@/components/FilterPanel'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Plus, Download } from 'lucide-react'
+import { Plus, Download, Trash2 } from 'lucide-react'
 import { Lead } from '@prisma/client'
 import { toast } from '@/components/ui/use-toast'
 
@@ -120,6 +120,44 @@ export default function LeadsPage() {
     }
   }
 
+  const handleDeleteAll = async () => {
+    if (!confirm('Are you sure you want to delete ALL leads? This action cannot be undone!')) return
+
+    try {
+      // Fetch all lead IDs
+      const response = await fetch('/api/leads?limit=1000')
+      if (!response.ok) {
+        throw new Error('Failed to fetch leads')
+      }
+
+      const data = await response.json()
+      const leadIds = data.leads.map((lead: Lead) => lead.id)
+
+      // Delete all leads
+      let successCount = 0
+      for (const id of leadIds) {
+        const deleteResponse = await fetch(`/api/leads/${id}`, {
+          method: 'DELETE',
+        })
+        if (deleteResponse.ok) {
+          successCount++
+        }
+      }
+
+      toast({
+        title: 'Success',
+        description: `Deleted ${successCount} leads successfully`,
+      })
+      fetchLeads()
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: 'Failed to delete all leads',
+        variant: 'destructive',
+      })
+    }
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -130,6 +168,10 @@ export default function LeadsPage() {
           </p>
         </div>
         <div className="flex gap-2">
+          <Button onClick={handleDeleteAll} variant="destructive">
+            <Trash2 className="mr-2 h-4 w-4" />
+            Delete All
+          </Button>
           <Button onClick={handleExport} variant="outline">
             <Download className="mr-2 h-4 w-4" />
             Export
