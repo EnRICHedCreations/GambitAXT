@@ -19,6 +19,11 @@ export default function LeadsPage() {
   const searchParams = useSearchParams()
   const [leads, setLeads] = useState<Lead[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  const [pagination, setPagination] = useState({
+    page: 1,
+    total: 0,
+    totalPages: 0,
+  })
   const [filters, setFilters] = useState({
     type: searchParams.get('type') || undefined,
     status: searchParams.get('status') || undefined,
@@ -27,7 +32,7 @@ export default function LeadsPage() {
 
   useEffect(() => {
     fetchLeads()
-  }, [filters])
+  }, [filters, pagination.page])
 
   const fetchLeads = async () => {
     setIsLoading(true)
@@ -36,11 +41,18 @@ export default function LeadsPage() {
       if (filters.type) params.set('type', filters.type)
       if (filters.status) params.set('status', filters.status)
       if (filters.search) params.set('search', filters.search)
+      params.set('page', pagination.page.toString())
+      params.set('limit', '50')
 
       const response = await fetch(`/api/leads?${params.toString()}`)
       if (response.ok) {
         const data = await response.json()
         setLeads(data.leads)
+        setPagination(prev => ({
+          ...prev,
+          total: data.total,
+          totalPages: data.totalPages,
+        }))
       }
     } catch (error) {
       console.error('Error fetching leads:', error)
@@ -51,10 +63,12 @@ export default function LeadsPage() {
 
   const handleSearch = (query: string) => {
     setFilters({ ...filters, search: query || undefined })
+    setPagination(prev => ({ ...prev, page: 1 }))
   }
 
   const handleFilterChange = (newFilters: { type?: string; status?: string }) => {
     setFilters({ ...filters, ...newFilters })
+    setPagination(prev => ({ ...prev, page: 1 }))
   }
 
   const handleDelete = async (id: string) => {
@@ -202,11 +216,67 @@ export default function LeadsPage() {
           </CardContent>
         </Card>
       ) : (
-        <LeadTable
-          leads={leads}
-          onDelete={handleDelete}
-          onStatusChange={fetchLeads}
-        />
+        <>
+          <LeadTable
+            leads={leads}
+            onDelete={handleDelete}
+            onStatusChange={fetchLeads}
+          />
+
+          {pagination.totalPages > 1 && (
+            <Card>
+              <CardContent className="py-4">
+                <div className="flex items-center justify-between">
+                  <div className="text-sm text-muted-foreground">
+                    Showing {((pagination.page - 1) * 50) + 1} to {Math.min(pagination.page * 50, pagination.total)} of {pagination.total} leads
+                  </div>
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setPagination(prev => ({ ...prev, page: prev.page - 1 }))}
+                      disabled={pagination.page === 1}
+                    >
+                      Previous
+                    </Button>
+                    <div className="flex items-center gap-1">
+                      {Array.from({ length: Math.min(pagination.totalPages, 5) }, (_, i) => {
+                        let pageNum
+                        if (pagination.totalPages <= 5) {
+                          pageNum = i + 1
+                        } else if (pagination.page <= 3) {
+                          pageNum = i + 1
+                        } else if (pagination.page >= pagination.totalPages - 2) {
+                          pageNum = pagination.totalPages - 4 + i
+                        } else {
+                          pageNum = pagination.page - 2 + i
+                        }
+                        return (
+                          <Button
+                            key={pageNum}
+                            variant={pagination.page === pageNum ? "default" : "outline"}
+                            size="sm"
+                            onClick={() => setPagination(prev => ({ ...prev, page: pageNum }))}
+                          >
+                            {pageNum}
+                          </Button>
+                        )
+                      })}
+                    </div>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setPagination(prev => ({ ...prev, page: prev.page + 1 }))}
+                      disabled={pagination.page === pagination.totalPages}
+                    >
+                      Next
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+        </>
       )}
     </div>
   )
