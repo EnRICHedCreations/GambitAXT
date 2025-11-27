@@ -5,11 +5,12 @@ import { Prisma } from '@prisma/client'
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
     const lead = await prisma.lead.findUnique({
-      where: { id: params.id },
+      where: { id },
     })
 
     if (!lead) {
@@ -17,7 +18,7 @@ export async function GET(
     }
 
     const activities = await prisma.activity.findMany({
-      where: { leadId: params.id },
+      where: { leadId: id },
       orderBy: { createdAt: 'desc' },
     })
 
@@ -30,15 +31,16 @@ export async function GET(
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
     const body = await request.json()
     const data = leadUpdateSchema.parse(body)
 
     // Track status change
     const existingLead = await prisma.lead.findUnique({
-      where: { id: params.id },
+      where: { id },
     })
 
     if (!existingLead) {
@@ -62,7 +64,7 @@ export async function PATCH(
     }
 
     const lead = await prisma.lead.update({
-      where: { id: params.id },
+      where: { id },
       data: updateData,
     })
 
@@ -70,7 +72,7 @@ export async function PATCH(
     if (data.status && data.status !== existingLead.status) {
       await prisma.activity.create({
         data: {
-          leadId: params.id,
+          leadId: id,
           activityType: 'status_change',
           description: `Status changed from ${existingLead.status} to ${data.status}`,
         },
@@ -89,17 +91,18 @@ export async function PATCH(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
     // Delete associated activities first
     await prisma.activity.deleteMany({
-      where: { leadId: params.id },
+      where: { leadId: id },
     })
 
     // Then delete the lead
     await prisma.lead.delete({
-      where: { id: params.id },
+      where: { id },
     })
 
     return NextResponse.json({ success: true })
