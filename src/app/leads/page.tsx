@@ -12,6 +12,8 @@ import { Plus, Download } from 'lucide-react'
 import { Lead } from '@prisma/client'
 import { toast } from '@/components/ui/use-toast'
 
+export const dynamic = 'force-dynamic'
+
 export default function LeadsPage() {
   const router = useRouter()
   const searchParams = useSearchParams()
