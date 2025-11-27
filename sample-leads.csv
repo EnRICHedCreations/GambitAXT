@@ -1,0 +1,5 @@
+Name,Phone,Email,Address,City,State,Zip Code,Notes,Call Recording,Estimate,MAO,Offer Price,Equity,Status
+John Doe,555-123-4567,john@example.com,123 Main St,Austin,TX,78701,Motivated seller,https://example.com/recording1.mp3,$450000,$350000,$320000,75,New
+Jane Smith,555-987-6543,jane@example.com,456 Oak Ave,Houston,TX,77001,Needs quick sale,https://example.com/recording2.mp3,$380000,$290000,$275000,68,Contacted
+Bob Johnson,555-456-7890,bob@example.com,789 Pine Rd,Dallas,TX,75201,Interested in cash offer,https://example.com/recording3.mp3,$520000,$410000,$390000,72,Qualified
+Sarah Williams,555-321-0987,sarah@example.com,321 Elm St,San Antonio,TX,78201,Property needs repairs,https://example.com/recording4.mp3,$295000,$220000,$205000,55,Follow-up
