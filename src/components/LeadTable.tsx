@@ -71,7 +71,14 @@ export function LeadTable({ leads, onDelete, onStatusChange }: LeadTableProps) {
                 )}
               </TableCell>
               <TableCell>
-                {lead.city && lead.state ? `${lead.city}, ${lead.state}` : lead.city || lead.state || '-'}
+                <div className="max-w-xs">
+                  {lead.address && (
+                    <div className="font-medium">{lead.address}</div>
+                  )}
+                  <div className="text-sm text-muted-foreground">
+                    {lead.city && lead.state ? `${lead.city}, ${lead.state} ${lead.zipCode || ''}`.trim() : lead.city || lead.state || '-'}
+                  </div>
+                </div>
               </TableCell>
               <TableCell className="text-right">
                 {formatCurrency(lead.estimate ? Number(lead.estimate) : null)}
