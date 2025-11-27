@@ -50,8 +50,17 @@ export async function GET(request: NextRequest) {
       prisma.lead.count({ where }),
     ])
 
+    // Convert Decimal fields to numbers for JSON serialization
+    const serializedLeads = leads.map(lead => ({
+      ...lead,
+      estimate: lead.estimate ? Number(lead.estimate) : null,
+      mao: lead.mao ? Number(lead.mao) : null,
+      offerPrice: lead.offerPrice ? Number(lead.offerPrice) : null,
+      equity: lead.equity ? Number(lead.equity) : null,
+    }))
+
     return NextResponse.json({
-      leads,
+      leads: serializedLeads,
       total,
       page: filterData.page,
       limit: filterData.limit,
@@ -87,7 +96,16 @@ export async function POST(request: NextRequest) {
       },
     })
 
-    return NextResponse.json(lead, { status: 201 })
+    // Serialize Decimal fields
+    const serializedLead = {
+      ...lead,
+      estimate: lead.estimate ? Number(lead.estimate) : null,
+      mao: lead.mao ? Number(lead.mao) : null,
+      offerPrice: lead.offerPrice ? Number(lead.offerPrice) : null,
+      equity: lead.equity ? Number(lead.equity) : null,
+    }
+
+    return NextResponse.json(serializedLead, { status: 201 })
   } catch (error) {
     console.error('Error creating lead:', error)
     if (error instanceof Error) {

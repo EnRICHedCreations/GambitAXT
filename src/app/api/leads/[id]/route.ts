@@ -22,7 +22,17 @@ export async function GET(
       orderBy: { createdAt: 'desc' },
     })
 
-    return NextResponse.json({ ...lead, activities })
+    // Serialize Decimal fields to numbers
+    const serializedLead = {
+      ...lead,
+      estimate: lead.estimate ? Number(lead.estimate) : null,
+      mao: lead.mao ? Number(lead.mao) : null,
+      offerPrice: lead.offerPrice ? Number(lead.offerPrice) : null,
+      equity: lead.equity ? Number(lead.equity) : null,
+      activities,
+    }
+
+    return NextResponse.json(serializedLead)
   } catch (error) {
     console.error('Error fetching lead:', error)
     return NextResponse.json({ error: 'Failed to fetch lead' }, { status: 500 })
@@ -79,7 +89,16 @@ export async function PATCH(
       })
     }
 
-    return NextResponse.json(lead)
+    // Serialize Decimal fields
+    const serializedLead = {
+      ...lead,
+      estimate: lead.estimate ? Number(lead.estimate) : null,
+      mao: lead.mao ? Number(lead.mao) : null,
+      offerPrice: lead.offerPrice ? Number(lead.offerPrice) : null,
+      equity: lead.equity ? Number(lead.equity) : null,
+    }
+
+    return NextResponse.json(serializedLead)
   } catch (error) {
     console.error('Error updating lead:', error)
     if (error instanceof Error) {
